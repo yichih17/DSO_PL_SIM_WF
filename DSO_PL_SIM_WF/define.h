@@ -115,7 +115,7 @@ public:
 	double RateSatisfaction[UEnumber];				// 每個UE的rate satisfaction
 	double DelaySatisfaction[UEnumber];				// 每個UE的delay satisfaction
 	double AvgSystemTime;						// Queueing算出來的
-	double AvgSystemTime_origin;				// Queueing算出來的(原本論文用的算法)
+	double AvgSystemTime_paper;				// Queueing算出來的(原本論文用的算法)
 	double TotalThroughput;						// 用來記錄整體系統的throughput
 	int TotalSchedulePacketNum;					// 用來記錄整體系統排程多少packet
 	int TotalDiscardPacketNum;					// 用來記錄整體系統砍多少packet
@@ -161,7 +161,7 @@ public:
 		memset(RateSatisfaction, 0, sizeof(RateSatisfaction));
 		memset(DelaySatisfaction, 0, sizeof(DelaySatisfaction));
 		AvgSystemTime = 0.0;
-		AvgSystemTime_origin = 0.0;
+		AvgSystemTime_paper = 0.0;
 		TotalThroughput = 0.0;
 		TotalSchedulePacketNum = 0;
 		TotalDiscardPacketNum = 0;

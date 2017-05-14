@@ -71,22 +71,25 @@ void Simulation_Result(UE *UEList, SimulationResult *Result)
 	double AvgSystemTime = 0.0;
 	double Xj = 0.0;
 	double Xj2 = 0.0;
-	double Xj_lower = 0.0;
-	double Xj2_lower = 0.0;
+	double Xj_paper = 0.0;
+	double Xj2_paper = 0.0;
 	double lambda = 0.0;
 	for (int i = 0; i < UEnumber; i++)
-	{
 		lambda += UEList[i].lambdai;
-		double weight_i = 1.0 / (double)UEnumber;
+	for (int i = 0; i < UEnumber; i++)
+	{
+		double weight_i = UEList[i].lambdai / lambda;
+
 		double Xij = UEList[i].packet_size / (ap_capacity[UEList[i].CQI - 1]);
-		double Xij_lower = UEList[i].packet_size / (ap_capacity[UEList[i].CQI - 1] / UEnumber);
 		Xj += Xij * weight_i;
 		Xj2 += pow(Xij, 2) * weight_i;
-		Xj_lower += Xij_lower * weight_i;
-		Xj2_lower += pow(Xij_lower, 2) * weight_i;
+
+		double Xij_paper = UEList[i].packet_size / (ap_capacity[UEList[i].CQI - 1] / UEnumber);
+		Xj_paper += Xij_paper * weight_i;
+		Xj2_paper += pow(Xij_paper, 2) * weight_i;
 	}
-	double rho = lambda * Xj;
-	Result->AvgSystemTime_origin = Xj_lower + lambda * Xj2_lower / (1 - lambda * Xj_lower);
+	//double rho = lambda * Xj;
+	Result->AvgSystemTime_paper = Xj_paper + lambda * Xj2_paper / (1 - lambda * Xj_paper);
 	Result->AvgSystemTime = Xj + lambda * Xj2 / (1 - lambda * Xj);
 
 	// 計算整體的throughput、delay、schedule packet數、discard packet數
@@ -184,7 +187,7 @@ void OutputResult(string Scheme, SimulationResult *Result)
 	else
 	{
 		//Write_SimulationResultFile << Scheme << " ";
-		Write_SimulationResultFile << (Result->TotalThroughput * 1000 / simulation_time) * 1000 << " " << Result->AverageSystemTime << " " << Result->AvgSystemTime << " " << Result->AvgSystemTime_origin << endl;
+		Write_SimulationResultFile << (Result->TotalThroughput * 1000 / simulation_time) * 1000 << " " << Result->AverageSystemTime << " " << Result->AvgSystemTime << " " << Result->AvgSystemTime_paper << endl;
 		//Write_SimulationResultFile << (Result->AverageThroughput * 1000 / TTI) * 1000 << endl;
 		//Write_SimulationResultFile << Result->AverageDelay << endl;
 		//Write_SimulationResultFile << Result->PacketLossRatio << endl;
