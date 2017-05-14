@@ -1,0 +1,6 @@
+*.txt
+[Dd]ebug/
+x64/
+*.suo
+*.VC.db
+*.VC.VC.opendb
