@@ -82,11 +82,11 @@ void Simulation_Result(UE *UEList, SimulationResult *Result)
 
 		double Xij = UEList[i].packet_size / (ap_capacity[UEList[i].CQI - 1]);
 		Xj += Xij * weight_i;
-		Xj2 += pow(Xij, 2) * weight_i;
+		Xj2 += (pow(Xij, 2) * weight_i);
 
 		double Xij_paper = UEList[i].packet_size / (ap_capacity[UEList[i].CQI - 1] / UEnumber);
 		Xj_paper += Xij_paper * weight_i;
-		Xj2_paper += pow(Xij_paper, 2) * weight_i;
+		Xj2_paper += (pow(Xij_paper, 2) * weight_i);
 	}
 	//double rho = lambda * Xj;
 	Result->AvgSystemTime_paper = Xj_paper + lambda * Xj2_paper / (1 - lambda * Xj_paper);
@@ -358,7 +358,7 @@ void EqualRB(int t, BufferStatus *Queue, UE *UE, SimulationResult *Result)
 
 int main()
 {
-	for (int times = 0; times < 100; times++)
+	for (int times = 0; times < 20; times++)
 	{
 		for (int i = 0; i < UEnumber; i++)
 		{
