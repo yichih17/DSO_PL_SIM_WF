@@ -90,6 +90,8 @@ void Simulation_Result(UE *UEList, SimulationResult *Result)
 	}
 	//double rho = lambda * Xj;
 	Result->AvgSystemTime_paper = Xj_paper + lambda * Xj2_paper / (1 - lambda * Xj_paper);
+	double rho = lambda * Xj;
+	double right = lambda * Xj2 / (1 - lambda * Xj);
 	Result->AvgSystemTime = Xj + lambda * Xj2 / (1 - lambda * Xj);
 
 	// 計算整體的throughput、delay、schedule packet數、discard packet數
@@ -299,8 +301,14 @@ void EqualRB(int t, BufferStatus *Queue, UE *UE, SimulationResult *Result)
 	double Priority = 0.0;							// scheduling時用的priority
 
 	int NumBufferPacket = 0;
+	int NumUEBufferHavePacket = 0;
 	for (int j = 0; j < UEnumber; j++)
+	{
+		if (Queue->PacketArrivalTime[j].size() != 0)
+			NumUEBufferHavePacket = NumUEBufferHavePacket + 1;
 		NumBufferPacket = NumBufferPacket + Queue->PacketArrivalTime[j].size();
+	}
+		
 	if (NumBufferPacket == 0)
 		return;
 
@@ -312,7 +320,7 @@ void EqualRB(int t, BufferStatus *Queue, UE *UE, SimulationResult *Result)
 
 		int CQI = UE[i].CQI;
 		double CarryBit = 0.0;
-		CarryBit = ap_capacity[UEList[i].CQI - 1] / UEnumber;			//UE在這個時間內可以傳送多少資料量
+		CarryBit = ap_capacity[UEList[i].CQI - 1] / NumUEBufferHavePacket;			//UE在這個時間內可以傳送多少資料量
 
 		//開始把資料從UE的buffer裡裝進RB裡
 		double RBSizeSpace = 0.0;
@@ -323,6 +331,7 @@ void EqualRB(int t, BufferStatus *Queue, UE *UE, SimulationResult *Result)
 			if (Queue->HeadPacketSize[i] > RBSizeSpace)	//第一個packet size比RB可攜帶的資料量大
 			{
 				Queue->HeadPacketSize[i] = Queue->HeadPacketSize[i] - RBSizeSpace;
+				//double TransmissionTime = RBSizeSpace / CarryBit;									// Debug用
 				Result->SystemTime[i] = Result->SystemTime[i] + RBSizeSpace / CarryBit;
 				RBSizeSpace = 0;
 				RBAssign = 0;
@@ -331,6 +340,8 @@ void EqualRB(int t, BufferStatus *Queue, UE *UE, SimulationResult *Result)
 			{
 				RBSizeSpace = RBSizeSpace - Queue->HeadPacketSize[i];
 				Result->Delay[i] = Result->Delay[i] + ((t + 1) - Queue->PacketArrivalTime[i][0]);	// 計算每一個packet delay
+				//double TransmissionTime = Queue->HeadPacketSize[i] / CarryBit;					// Debug用
+				//double WaitingTime = ((t + 1) - Queue->PacketArrivalTime[i][0]);					// Debug用
 				Result->SystemTime[i] = Result->SystemTime[i] + ((t + 1) - Queue->PacketArrivalTime[i][0]) + Queue->HeadPacketSize[i] / CarryBit;		// 計算傳送到UE的時間
 				Queue->PacketArrivalTime[i].erase(Queue->PacketArrivalTime[i].begin());
 				Result->SchedulePackerNum[i] = Result->SchedulePackerNum[i] + 1;

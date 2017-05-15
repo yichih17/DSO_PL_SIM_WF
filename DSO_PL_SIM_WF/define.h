@@ -14,10 +14,10 @@
 #define satisfied_TH 75
 
 //Simulation parameter
-#define simulation_time 1000000	//ms(TTI
+#define simulation_time 1000000	//ms (TTI)
 #define UE_dis_mode 1			//0: uniform 1:hotspot
 #define UE_type_number 3		//DB = 50, 100, 300ms
-#define UEnumber 45
+#define UEnumber 100
 
 #include<vector>
 
