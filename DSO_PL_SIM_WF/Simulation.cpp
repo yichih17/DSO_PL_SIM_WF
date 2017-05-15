@@ -75,18 +75,18 @@ void Simulation_Result(UE *UEList, SimulationResult *Result)
 	double Xj2_paper = 0.0;
 	double lambda = 0.0;
 	for (int i = 0; i < UEnumber; i++)
-		lambda += UEList[i].lambdai;
+		lambda = lambda + UEList[i].lambdai;
 	for (int i = 0; i < UEnumber; i++)
 	{
 		double weight_i = UEList[i].lambdai / lambda;
 
 		double Xij = UEList[i].packet_size / (ap_capacity[UEList[i].CQI - 1]);
-		Xj += Xij * weight_i;
-		Xj2 += (pow(Xij, 2) * weight_i);
+		Xj = Xj + Xij * weight_i;
+		Xj2 = Xj2 + pow(Xij, 2) * weight_i;
 
 		double Xij_paper = UEList[i].packet_size / (ap_capacity[UEList[i].CQI - 1] / UEnumber);
-		Xj_paper += Xij_paper * weight_i;
-		Xj2_paper += (pow(Xij_paper, 2) * weight_i);
+		Xj_paper = Xj_paper + Xij_paper * weight_i;
+		Xj2_paper = Xj2_paper + pow(Xij_paper, 2) * weight_i;
 	}
 	//double rho = lambda * Xj;
 	Result->AvgSystemTime_paper = Xj_paper + lambda * Xj2_paper / (1 - lambda * Xj_paper);
@@ -275,7 +275,7 @@ void Buffer_Status(int t, BufferStatus *Queue, UE *UEList, vector <double> *Temp
 
 				Queue->PacketHOLDelay[i].erase(Queue->PacketHOLDelay[i].begin());							//因為packet的HOL delay超過delay budget，所以要砍掉第一個packet
 				Result->DiscardPacketNum[i] = Result->DiscardPacketNum[i] + 1;								//累計discard掉的packet數
-				Result->SystemTime[i] += t - Queue->PacketArrivalTime[i][0];								//被discard掉的packet在系統的時間
+				Result->SystemTime[i] = Result->SystemTime[i] + (t + 1) - Queue->PacketArrivalTime[i][0];	///被discard掉的packet在系統的時間
 				Queue->PacketArrivalTime[i].erase(Queue->PacketArrivalTime[i].begin());						//也刪掉它在PacketArrivalTime裡記錄的arrival time
 				if (Queue->PacketHOLDelay[i].empty())
 					break;
@@ -304,20 +304,17 @@ void EqualRB(int t, BufferStatus *Queue, UE *UE, SimulationResult *Result)
 	if (NumBufferPacket == 0)
 		return;
 
-	// 開始競標RB看要分配給哪個UE
+	// 開始幫UE分配傳送時間
 	for (int i = 0; i < UEnumber; i++)
 	{
-		if (Queue->PacketArrivalTime[i].size() == 0)
+		if (Queue->PacketArrivalTime[i].size() == 0)				//如果UE有資料要傳才計算
 			continue;
 
-		//分配RB給UE
-		double MaxPriority = 0.0;
-		int CQI = 0;
+		int CQI = UE[i].CQI;
 		double CarryBit = 0.0;
-		CQI = UE[i].CQI;
 		CarryBit = ap_capacity[UEList[i].CQI - 1] / UEnumber;			//UE在這個時間內可以傳送多少資料量
 
-																		//開始把資料從UE的buffer裡裝進RB裡
+		//開始把資料從UE的buffer裡裝進RB裡
 		double RBSizeSpace = 0.0;
 		int RBAssign = 1;
 		RBSizeSpace = CarryBit;
@@ -326,7 +323,7 @@ void EqualRB(int t, BufferStatus *Queue, UE *UE, SimulationResult *Result)
 			if (Queue->HeadPacketSize[i] > RBSizeSpace)	//第一個packet size比RB可攜帶的資料量大
 			{
 				Queue->HeadPacketSize[i] = Queue->HeadPacketSize[i] - RBSizeSpace;
-				Result->SystemTime[i] += RBSizeSpace / CarryBit;
+				Result->SystemTime[i] = Result->SystemTime[i] + RBSizeSpace / CarryBit;
 				RBSizeSpace = 0;
 				RBAssign = 0;
 			}
